@@ -15,7 +15,7 @@ Write-Host
 $WorkingDir = Get-location
 $ShortcutFilename = "$env:APPDATA\Microsoft\Windows\SendTo\unpack releases.lnk"
 $PowerShellExe = "$env:SYSTEMROOT\system32\WindowsPowerShell\v1.0\powershell.exe"
-$PowerShellArguments = "-noexit -Command `"& '$WorkingDir\unpack.ps1'`""
+$PowerShellArguments = "-Command `"& '$WorkingDir\unpack.ps1'`""
 
 Write-Host "These values will be used to create the shortcut:"
 Write-Host "shortcut filename:   $ShortcutFilename"
