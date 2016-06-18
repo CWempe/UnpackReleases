@@ -1,5 +1,5 @@
 
-### Variablen
+### variables
 $DefaultDir = Get-location
 $zip = "C:\Program Files\7-Zip\7z.exe"
 #$date = Get-Date -uformat "%Y-%m-%d"
@@ -16,11 +16,11 @@ foreach ($arg in $args)
 
 
 ###
-### Quellverzeichnis angeben
+### set source directory
 ###
 
 do {
-	$SrcDir = Read-Host "Quellverzeichnis angeben ["$DefaultDir"]"
+	$SrcDir = Read-Host "set source directory ["$DefaultDir"]"
 	If ($SrcDir -eq "")
 	{
 		$SrcDir = $DefaultDir
@@ -29,27 +29,27 @@ do {
 }
 until ($PathExists)
 $SrcDir = [string]::join("", $SrcDir)
-Write-Host "Quellverzeichnis ist: "$SrcDir
+Write-Host "source directory is: "$SrcDir
 Write-Host ""
 
 
 ###
-### Quellverzeichnis angeben
+### set target directory
 ###
 
 $DstDir = ""
 do {
-	$DstDir = Read-Host "Zielverzeichnis angeben ["$SrcDir"]"
+	$DstDir = Read-Host "set target directory ["$SrcDir"]"
 	If ($DstDir -eq "")
 	{
 		$DstDir = $SrcDir
 	}
 	$PathExists = Test-Path $DstDir
 	If ($PathExists -eq $False) {
-		$AskCreate = Read-Host "Verzeichnis existiert nicht. Erstellen? [j/n]"
-		If ($AskCreate -eq "j")
+		$AskCreate = Read-Host "Target directory does not exits. Create it? [y/n]"
+		If ($AskCreate -eq "y")
 		{
-			Write-Host "Erstelle Verzeichnis ..."
+			Write-Host "creating directory ..."
 			New-Item $DstDir -type directory -force
 			$PathExists = Test-Path $DstDir
 		}
@@ -57,7 +57,7 @@ do {
 }
 until ($PathExists)
 $DstDir = [string]::join("", $DstDir)
-Write-Host "Zielverzeichnis ist: "$DstDir
+Write-Host "target directory is: "$DstDir
 Write-Host ""
 
 $Logfile = $SrcDir+"\logfile.log"
@@ -77,7 +77,7 @@ Write "" >> $Logfile
 
 
 ###
-### RAR-Dateien suchen und entpacken
+### search for rar-files and unpack
 ###
 
 foreach ($file in get-childitem $SrcDir -include *.rar -recurse)
@@ -85,46 +85,46 @@ foreach ($file in get-childitem $SrcDir -include *.rar -recurse)
 	Write "############" >> $Logfile
 	#Write $file >> $Logfile
 	
-	### Pfad in Einzelteile aufteilen
+	### split paths
 	$path = split-path $file
 	
-	### Releasenamen speichern		
+	### save release name
 	$SrcDirSlash = [string]::join("", $SrcDir)
 	$SrcDirSlash = $SrcDirSlash+"\"
 	$relname = $path.Replace($SrcDirSlash, "")
 	$relname = $relname.Replace("\", " ")
 	$relname = $relname.Replace(" Subs", "")
-	Write "Releasename: "$relname >> $Logfile
+	Write "release name: "$relname >> $Logfile
 	
-	### Releasekürzel speichern
+	### save short release name
 	$shortname = split-path $file -leaf
 	$shortname = $shortname.Replace(".rar", "")
 	$shortname = $shortname.Replace("-subs", "")
-	Write "Releasekürzel: "$shortname >> $Logfile
+	Write "short release name: "$shortname >> $Logfile
 		
 	
-	### Entpacken
-	#   Nur Dateien, die nicht weiterfolgende Teilarchive von "part(0)01.rar" sind.
+	### unpack
+	#   only first partial archives. Not "part(0)01.rar".
 	if ( $file -notmatch "^.*part[0-9]{2,3}.rar$" ) {
 		$outparam = "-o"+$DstDir
-		Write "Entpacken ..." >> $Logfile		
+		Write "unpack ..." >> $Logfile		
 		& $zip e "$file" $outparam -y
 	}
 	elseif (  $file -match "^.*part0?01.rar$" ) {
 		$outparam = "-o"+$DstDir
-		Write "Entpacken ..." >> $Logfile		
+		Write "unpack ..." >> $Logfile		
 		& $zip e "$file" $outparam -y
 	}
 	else {
-		Write "Überspringe Teilarchiv ..."
+		Write "skip partial archive ..."
 	}
 	
 	
 
 	
-	### Umbenennen	
-	#   Ersetze Releasekürzel durch Releasename
-	Write "Dateien umbenennen ..." >> $Logfile
+	### rename	
+	#   replace short release name with release name
+	Write "renaming files ..." >> $Logfile
 	get-childitem $DstDir"\"$shortname* | foreach { rename-item $_ $_.Name.Replace(”$shortname-“, “$relname.”) }
 	get-childitem $DstDir"\"$shortname* | foreach { rename-item $_ $_.Name.Replace(”$shortname“, “$relname”) }
 	
@@ -133,5 +133,5 @@ foreach ($file in get-childitem $SrcDir -include *.rar -recurse)
 
 $time = Get-Date -uformat "%Y-%m-%d %H:%M:%S" 
 Write "" >> $Logfile
-Write "Ende:" >> $Logfile
+Write "Done:" >> $Logfile
 Write $time >> $Logfile
